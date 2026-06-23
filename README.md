@@ -3,7 +3,7 @@ A stateless, local cryptographic tool for standard BIP39/BIP32 space mapping and
 
 ## 🚀 Live Preview
 Run the stateless client directly via GitHub Pages:
-👉 https://btctorbit.github.io/torbit.min@v0.0.0.html
+👉 https://btctorbit.github.io/torbit/torbit.min@v0.0.0.html
 
 ## 🔒 Security Posture
 - **Pure Client-Side**: No backend servers, no analytics trackers, zero data telemetry.

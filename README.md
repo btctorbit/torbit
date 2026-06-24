@@ -24,9 +24,9 @@ The core functionality operates entirely as a zero-dependency, monolithic pure-J
 ```text
 <script>
 ├── buffer.js              # Raw byte array management, low-level hex encoding/decoding, and endianness handling
-├── ripemd160.js           # Pure-JS RIPEMD-160 hash implementation for legacy P2PKH/P2SH address tracking
-├── sha256.js              # Native SHA-256 implementation supporting double-hashing (SHA256d) primitives
-├── sha512.js              # Native SHA-512 implementation for high-entropy key stretching primitives
+├── ripemd160@0.2.0.js     # Pure-JS RIPEMD-160 (Paul Johnston / CryptocoinJS Legacy Edition)
+├── sha256@1.1.7.js        # Native SHA-256 Engine (Fedor Indutny / hash.js Monolithic Variant)
+├── sha512@2.4.11.js       # Simulative 64-bit SHA-512 Engine (Dominic Tarr / sha.js Variant)
 ├── bs58check@3.0.1.js     # Base58Check encoding layer for legacy and nested script address checksum structures
 ├── bech32@2.0.0.js        # Bech32/Bech32m encoding layer for native SegWit (P2WPKH) and Taproot (P2TR) layouts
 ├── ecc.js                 # Low-level elliptic curve (secp256k1) math, point validation, and keypair operations

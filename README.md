@@ -9,3 +9,9 @@ Run the stateless client directly via GitHub Pages:
 - **Pure Client-Side**: No backend servers, no analytics trackers, zero data telemetry.
 - **Stateless Operation**: All cryptographic calculations occur completely within your local browser memory instance.
 - **Production Edition Available**: The public version runs on Testnet parameters. For unminified, zero-dependency Mainnet production sources with advanced key-shuffling components, check the unlock anchor on the live page.
+
+---
+
+## 📡 Escalation Routing
+For mainnet license delivery failures, invoice verification mismatches, or PGP-encrypted technical custom integrations, route your cryptographic payload to:
+👉 `btctorbit@protonmail.com`

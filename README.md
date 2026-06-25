@@ -29,7 +29,7 @@ The core functionality operates entirely as a zero-dependency, monolithic pure-J
 ├── sha512@2.4.11.js       # Simulative 64-bit SHA-512 Engine (Dominic Tarr / sha.js Variant)
 ├── bs58check@3.0.1.js     # Base58Check encoding layer for legacy and nested script address checksum structures
 ├── bech32@2.0.0.js        # Bech32/Bech32m encoding layer for native SegWit (P2WPKH) and Taproot (P2TR) layouts
-├── ecc.js                 # Low-level elliptic curve (secp256k1) math, point validation, and keypair operations
+├── tiny-secp256k1@2.1.1.js# Pure JS refactored version of tiny-secp256k1 (Engine: @noble/secp256k1@1.7.1)
 ├── bip39@3.0.0.js         # Mnemonic entropy decoding, PBKDF2 key stretching, and English wordlist mapping
 ├── bip32@4.0.0.js         # Hierarchical Deterministic (HD) framework supporting extended keys (xprv/xpub) and paths
 └── torbit.js              # Main application orchestration layer. [Notice: This public instance deploys minified runtime logic; unminified offline production sources must be deployed locally via the offline anchor package.]

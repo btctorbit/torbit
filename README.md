@@ -23,7 +23,7 @@ The core functionality operates entirely as a zero-dependency, monolithic pure-J
 
 ```text
 <script>
-├── buffer.js              # Raw byte array management, low-level hex encoding/decoding, and endianness handling
+├── buffer@5.7.1.js        # Raw byte array management, low-level hex encoding/decoding, and endianness handling
 ├── ripemd160@0.2.0.js     # Pure-JS RIPEMD-160 (Paul Johnston / CryptocoinJS Legacy Edition)
 ├── sha256@1.1.7.js        # Native SHA-256 Engine (Fedor Indutny / hash.js Monolithic Variant)
 ├── sha512@2.4.11.js       # Simulative 64-bit SHA-512 Engine (Dominic Tarr / sha.js Variant)

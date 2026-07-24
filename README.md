@@ -3,6 +3,7 @@ A stateless, local cryptographic tool for standard BIP39/BIP32 space mapping and
 
 ## Version
 **Current Release: v1.0.0**
+
 v0.0.0
   - stable deterministic wallet core
 

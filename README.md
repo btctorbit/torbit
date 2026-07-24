@@ -32,7 +32,8 @@ The core functionality operates entirely as a zero-dependency, monolithic pure-J
 ├── tiny-secp256k1@2.1.1.js# Purged WASM Black-Box Binaries; 100% auditable pure JS layer (Engine: @noble/secp256k1@1.7.1)
 ├── bip39@3.0.0.js         # Mnemonic entropy decoding, PBKDF2 key stretching, and English wordlist mapping
 ├── bip32@4.0.0.js         # Hierarchical Deterministic (HD) framework supporting extended keys (xprv/xpub) and paths
-└── torbit.js              # Main application orchestration layer. [Notice: This public instance deploys minified runtime logic; unminified offline production sources must be deployed locally via the offline anchor package.]
+├── torbit.js              # Core library layer. Provides deterministic entropy derivation, cryptographic primitives, and wallet derivation algorithms.
+└── wallet.js              # Application business layer. [Notice: This public instance deploys minified runtime logic; unminified offline production sources must be deployed locally via the offline anchor package.]
 ```
 
 ## 📄 License

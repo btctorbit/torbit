@@ -1,6 +1,14 @@
 # Torbit
 A stateless, local cryptographic tool for standard BIP39/BIP32 space mapping and ledger auditing.
 
+## Version
+**Current Release: v1.0.0**
+v0.0.0
+  - stable deterministic wallet core
+
+v1.0.0
+  - dfsTranscript + account new seed
+
 ## 🚀 Live Preview
 Run the stateless client directly via GitHub Pages:
 👉 https://btctorbit.github.io/torbit

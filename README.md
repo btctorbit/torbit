@@ -2,12 +2,12 @@
 A stateless, local cryptographic tool for standard BIP39/BIP32 space mapping and ledger auditing.
 
 ## Version
-**Current Release: v1.0.0**
+**Current Release: v1.0.1**
 
 v0.0.0
   - stable deterministic wallet core
 
-v1.0.0
+v1.0.1
   - dfsTranscript + account new seed
 
 ## 🚀 Live Preview

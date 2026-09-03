@@ -2,7 +2,7 @@
 A stateless, local cryptographic tool for standard BIP39/BIP32 space mapping and ledger auditing.
 
 ## Version
-**Current Release: v2.0.0**
+**Current Release: v2.0.1**
 
 v0.0.0
   - stable deterministic wallet core
@@ -10,8 +10,8 @@ v0.0.0
 v1.0.1
   - dfsTranscript + account new seed
 
-v2.0.0
-  - one seed per address
+v2.0.1
+  - use a passkey to set up multisig
 
 ## 🚀 Live Preview
 Run the stateless client directly via GitHub Pages:

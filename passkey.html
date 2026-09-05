@@ -1,0 +1,505 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1">
+        <title>Passkey Signer Card Generator</title>
+        <style>
+            :root {--paper: #F6F7F9;--paper-raised: #FFFFFF;--ink: #111827;--ink-soft: #4B5563;--line: #D6DAE1;--accent: #1447e6;--accent-soft: #E7ECF3;--danger: #B3261E;--danger-soft: #FBEAE9;--ok: #2F6F4E;--ok-soft: #E8F3EC;--checksum: #8A3B12;--checksum-soft: #FBEEE3;}
+            body { width: 100%; min-width: 420px; margin: 0 auto; overflow-x: hidden; font-family: "Courier New", Courier, monospace, sans-serif; font-size: 0.85rem;}
+            * { box-sizing: border-box; padding: 0; margin: 0 }
+            button, input, select, optgroup, textarea { font: inherit; font-feature-settings: inherit; font-variation-settings: inherit; letter-spacing: inherit; color: inherit; opacity: 1;}
+            textarea { width: 100%; font-size: 0.75rem; appearance: none; resize: vertical; display: block; /*outline: none;*/ }
+            textarea:focus {/*border: 1px solid #1447e6;*/ border-radius: 0}
+            input[type="text"], input[type="number"], input[type="password"] { width: 100%; height: 2rem; line-height: 2rem; padding-left: 0.35rem; font-size: 0.85rem; appearance: none; border: 1px solid light-dark(rgb(118, 118, 118), rgb(133, 133, 133)); }
+            select { border: 1px solid light-dark(rgb(118, 118, 118), rgb(133, 133, 133)); }
+            input[disabled], select[disabled], textarea[disabled], button[disabled]{ cursor: not-allowed; background-color: light-dark(rgba(239, 239, 239, 0.3), rgba(59, 59, 59, 0.3)); border-color: rgba(118, 118, 118, 0.3); color: #9E9E9E; cursor: default;}
+            button { border-radius: 0.2rem; background-color: #1447e6; color: #fff; padding:6px 8px; border: 1px solid #1447e6;}
+            button[disabled] { border: 1px solid rgba(118, 118, 118, 0.3); }
+            header, footer, .wrapper, .warning-banner, #envNotice { max-width: 760px; margin: 0 auto; background-color: #fff; box-shadow: 0 8px 30px rgba(10, 5, 20, 0.06);}
+            header { display: flex; justify-content: space-between; background: #151821; border-bottom: 1px solid #222;}
+            .logo { display: flex; padding: .5rem .75rem;  align-items: center; gap: 12px;}
+            .logo h1 { margin: 0; font-size: 22px; font-weight: 600; letter-spacing: 1px; color: #f7931a;}
+            .version { font-size: .75rem; }
+            .version b { font-family: Arial,sans-serif; font-size: .55rem; }
+
+            .warning-banner {padding: .35rem .8rem; font-size: .85rem; background: linear-gradient(90deg, #fff4c2, #ffe58f); color: #664d03; word-break: break-word; line-height: 1.2}
+            .wrapper {max-width: 760px;margin: 0 auto; padding: 0 1rem;}
+            .field .passkey-button { width: 100%; display: flex; gap: 1rem; justify-content: flex-start; align-items: center; margin-top: .75rem;}
+            .field .passkey-button input { width: auto; flex: 1; min-width: 0; box-sizing: border-box; }
+            .field .passkey-button button { flex: 0 0 auto; }
+            .letterhead { padding: 1rem 0 0; }
+            .letterhead h1 {font-size: 26px;}
+            
+            #envNotice {background: var(--ok-soft);color: var(--ok); border: 1px solid var(--ok); font-size: .8rem; }
+            #envNotice.warn { background: var(--danger-soft);color: var(--danger);border: 1px solid var(--danger);  }
+            .callout {padding: .35rem .5rem;}
+            .callout.warn {border-color: #E3C9A8;background: var(--checksum-soft);color: #6B3A10;}
+
+            section.step {padding: 0 2rem 0 2rem; ;}
+            .step-head { display: flex; align-items: baseline; gap: 10px;margin-top: 1rem;}
+            .step-num { font-family: "Iowan Old Style", "Palatino Linotype", Georgia, serif; font-size: 15px; color: var(--accent); border: 1px solid var(--accent); border-radius: 50%; width: 22px; height: 22px; display: flex; align-items: center; justify-content: center; flex-shrink: 0;}
+            .step-title {font-size: 16.5px;font-weight: 600;}
+            .step-body { padding-left: 32px; font-size: 14.5px; color: var(--ink-soft);}
+
+            .status { margin-top: 10px; font-size: 13.5px; padding: 8px 10px; display: none;}
+            .status.show { display: block; }
+            .status.ok { background: var(--ok-soft); color: var(--ok); }
+            .status.err { background: var(--danger-soft); color: var(--danger); }
+            .status.info { background: var(--accent-soft); color: var(--accent); }
+
+            .card {border: 1px solid var(--ink); background: var(--paper-raised); padding: 1rem;margin-top: .75rem;}
+            .card-label { text-transform: none; color: var(--ink-soft);}
+            .code-grid { display: flex; flex-wrap: wrap; gap: 8px 10px; font-family: "SFMono-Regular", Menlo, Consolas, "Liberation Mono", monospace; font-size: 17px; letter-spacing: 1px; min-height: 30px;}
+            .code-group { background: var(--accent-soft); border-radius: 3px; padding: 5px 9px; color: var(--accent);}
+            .code-group.checksum { background: var(--checksum-soft); color: var(--checksum); border: 1px dashed var(--checksum);}
+            .code-legend { margin-top: 12px; color: var(--ink-soft); display: flex; gap: 18px; flex-wrap: wrap;}
+            .code-legend span {display: inline-flex;align-items: center;gap: 6px;}
+
+            .swatch { width: 10px; height: 10px; border-radius: 2px; display: inline-block;}
+            .swatch.a { background: var(--accent-soft); border: 1px solid var(--accent); }
+            .swatch.b { background: var(--checksum-soft); border: 1px dashed var(--checksum); }
+
+            .credential-id { word-break: break-all; color: var(--ink-soft); background: var(--paper); border: 1px solid var(--line); border-radius: 3px; padding: 8px 10px; margin-top: 8px;}
+
+            .verify-result {margin-bottom: 1rem;padding: .5rem 0 .5rem .75rem;display: none;}
+            .verify-result.show { display: block; }
+            .verify-result.pass { background: var(--ok-soft); color: var(--ok); border: 1px solid var(--ok); }
+            .verify-result.fail { background: var(--danger-soft); color: var(--danger); border: 1px solid var(--danger); }
+
+            details.advanced {margin-top: 14px;}
+            details.advanced summary {cursor: pointer;color: var(--accent);}
+            #step2 p { margin-bottom: .75rem }
+            #btnCopyCode, #btnCopyHex { font-size: 0.85rem;  cursor: pointer; }
+            #btnCopyCode.copied, #btnCopyHex.copied { color: #1447e6; }
+            #btnCreateNew { background: #fff; color: #000;}
+
+            footer {border-top: 1px solid var(--line);color: var(--ink-soft);}
+
+            @media print {
+                body { padding: 0; background: #fff; }
+                .callout, button, section.step:not(#step2), header.letterhead p, footer, details, .field { display: none !important; }
+                #step2 .step-body > *:not(.card) { display: none !important; }
+                .card { border: 2px solid #000; }
+            }
+        </style>
+    </head>
+    <body>
+        <header>
+            <div class="logo">
+                <svg width="42" height="42" viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg" style="filter: drop-shadow(0px 0px 2px rgba(247,147,26,0.3));">
+                    <circle cx="32" cy="32" r="30" stroke="#f7931a" stroke-width="2" stroke-dasharray="4 2" fill="none" opacity="0.4"/>
+                    <circle cx="32" cy="32" r="24" stroke="#f7931a" stroke-width="2.5" stroke-dasharray="12 6" fill="none" opacity="0.7"/>
+                    <circle cx="32" cy="32" r="18" stroke="#f7931a" stroke-width="2" stroke-dasharray="2 4" fill="none" opacity="0.9"/>
+                    <circle cx="32" cy="32" r="11" fill="#111111" stroke="#f7931a" stroke-width="2"/>
+                    <text x="32" y="39.5" text-anchor="middle" font-size="21" font-family="'Courier New', monospace, sans-serif" fill="#f7931a" font-weight="900">₿</text>
+                </svg>
+                <h1 id="project">Torbit<span class="version"><b>@</b>Passkey</span></h1>
+            </div>
+        </header>
+        <p class="warning-banner">
+            <strong>Important:</strong> once generated, this code represents the signing power of this Passkey. A single mistyped character produces a completely different, silently wrong key. Always verify with Step 3 before transcribing to the offline device, and never transmit this code in plain text via screenshots, chat apps, or cloud notes.
+        </p>
+        <div class="callout" id="envNotice"></div>
+        <div class="wrapper">
+            <div class="letterhead">
+                <h1>Passkey Signer Card Generator</h1>
+                <p>Create a Passkey on this connected device, then generate a hand-transcribable signer code for setting up one signing slot on an offline wallet.</p>
+            </div>
+            <div class="step-head"><span class="step-num">1</span><span class="step-title">Generate a Signer Card</span></div>
+            <section class="step" id="step1">
+                <div class="field">
+                    <p>Requires a device with Face ID / Touch ID or a security key, and this page must be loaded over HTTPS (for example, a GitHub Pages URL). Nothing is stored — if this device already has a Passkey for this site, your platform's picker will offer it; otherwise you'll be asked whether to create a new one.</p>
+                    <!--Label (optional — derives a distinct signing slot from the same Passkey; leave blank otherwise)-->
+                    <div class="passkey-button">
+                        <!--input type="text" id="labelInput" placeholder="e.g. signer-2"-->
+                        <button id="btnPasskey">Use Passkey</button> Or
+                        <button id="btnCreateNew" class="secondary">Create New Passkey</button><input type="text" id="labelInput" placeholder="torbit-btc-multisig-20260904">
+                    </div>
+                </div>
+                <div class="status" id="passkeyStatus"></div>
+
+                <div class="card" id="resultCard">
+                    <div class="card-label">Credential ID — identifier only, not a backup</div>
+                    <div class="credential-id" id="credentialIdOut">--</div>
+                    <div class="card-label" style="margin-top:18px">Signer Code — transcribe character by character to the offline device</div>
+                    <div class="code-grid" id="codeGrid"><span class="code-group">0000</span><span class="code-group checksum">0000</span></div>
+                    <div class="code-legend">
+                        <span><span class="swatch a"></span>Data</span>
+                        <span><span class="swatch b"></span>Checksum group (last group, verifies the transcription)</span>
+                    </div>
+                    <div class="card-label" style="margin-top:18px">Same secret, as hex — for tools that expect a plain hex string</div>
+                    <div class="code-grid" id="hexGrid"><span class="code-group">0000</span><span class="code-group checksum">0000</span></div>
+                </div>
+                <!--details class="advanced" id="printBlock" style="display:none">
+                    <summary>Print / save as a paper backup</summary>
+                    <p>Opens the print dialog. Only the signer code card is printed — everything else is hidden.</p>
+                    <button class="secondary" id="btnPrint">Print Signer Card</button>
+                </details-->
+            </section>
+            <div class="step-head"><span class="step-num">2</span><span class="step-title">Verify the Transcription</span></div>
+            <section class="step"  id="step2">
+                <p>Before copying to the offline device, paste it back here to check. This step is purely local computation — no network and no Passkey needed. It also works when this page is opened offline via <code>file://</code>.</p>
+                <p><textarea id="verifyInput" rows="6" placeholder="Paste or type the full signer code (14 groups, spaces or hyphens are both fine)"></textarea></p>
+                <p><button id="btnVerify">Verify</button></p>
+                <div class="verify-result" id="verifyResult"></div>
+            </section>
+            <footer>
+                <div class="license"><br /><pre>&nbsp;Copyright (c) 2026 Torbit contributors</pre><br /></div>
+            </footer>
+        </div>
+        <script>
+            const ALPHABET = '0123456789ABCDEFGHJKMNPQRSTVWXYZ';
+            // Crockford Base32
+            function encodeBase32(bytes) {
+                let bits = 0, value = 0, output = '';
+                for (let i = 0; i < bytes.length; i++) {
+                value = (value << 8) | bytes[i];
+                bits += 8;
+                while (bits >= 5) {
+                output += ALPHABET[(value >>> (bits - 5)) & 31];
+                bits -= 5;
+                }
+                }
+                if (bits > 0) {
+                output += ALPHABET[(value << (5 - bits)) & 31];
+                }
+                return output;
+            }
+
+            function decodeBase32(symbols) {
+                let bits = 0, value = 0;
+                const bytes = [];
+                for (const ch of symbols) {
+                const idx = ALPHABET.indexOf(ch);
+                if (idx === -1) throw new Error('Unrecognized character: ' + ch);
+                value = (value << 5) | idx;
+                bits += 5;
+                if (bits >= 8) {
+                bytes.push((value >>> (bits - 8)) & 0xff);
+                bits -= 8;
+                }
+                }
+                return new Uint8Array(bytes);
+            }
+
+            ;(function () {
+                    function normalizeInput (str) {
+                        return str.toUpperCase().replace(/[\s\-]/g, '').replace(/O/g, '0').replace(/[IL]/g, '1');
+                    }
+                    function bufToBase64Url (buf) {
+                        const bytes = new Uint8Array(buf);
+                        let str = '';
+                        for (const b of bytes) str += String.fromCharCode(b);
+                        return btoa(str).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
+                    }
+                    function bufToHex (bytes) {
+                        return Array.from(bytes).map(b => b.toString(16).padStart(2, '0')).join('');
+                    }
+                    function hexToBuf (hex) {
+                        const bytes = new Uint8Array(hex.length / 2);
+                        for (let i = 0; i < bytes.length; i++) bytes[i] = parseInt(hex.substr(i * 2, 2), 16);
+                        return bytes;
+                    }
+
+                    // ---------- checksum ----------
+                    async function computeChecksumGroup(payloadBytes) {
+                        const hash = new Uint8Array(await crypto.subtle.digest('SHA-256', payloadBytes));
+                        return encodeBase32(hash.slice(0, 3)).slice(0, 4); // 20 bits -> 4 symbols
+                    }
+
+                    async function buildCode (secretBytes) {
+                        const payloadSymbols = encodeBase32(secretBytes); // 32 bytes -> 52 symbols
+                        const checksumSymbols = await computeChecksumGroup(secretBytes);
+                        return payloadSymbols + checksumSymbols; // 56 symbols total
+                    }
+                    function groupSymbols (symbols, groupSize) {
+                        const groups = [];
+                        for (let i = 0; i < symbols.length; i += groupSize) {
+                            groups.push(symbols.slice(i, i + groupSize));
+                        }
+                        return groups;
+                    }
+                    async function verifyCode (rawInput) {
+                        const compact = rawInput.trim().replace(/[\s\-]/g, '');
+
+                        // Hex path: only hex digits AND the expected checksummed length.
+                        // Length (68 vs 56) disambiguates from Crockford even though their
+                        // alphabets overlap (Crockford's letters include A-F).
+                        if (/^[0-9a-fA-F]+$/.test(compact) && compact.length === 68) {
+                            const payloadHex = compact.slice(0, 64).toLowerCase();
+                            const checksumHex = compact.slice(64, 68).toLowerCase();
+                            const payloadBytes = hexToBuf(payloadHex);
+                            const hash = new Uint8Array(await crypto.subtle.digest('SHA-256', payloadBytes));
+                            const expected = bufToHex(hash.slice(0, 2));
+                            
+                            if (expected !== checksumHex) return { ok: false, reason: 'Checksum does not match (hex format) — a character was likely mistyped. Recheck each group.' };
+                            
+                            return { ok: true, bytes: payloadBytes, format: 'hex' };
+                        }
+
+                        // Crockford path.
+                        const clean = normalizeInput(rawInput);
+                        if (clean.length === 56) {
+                            const payloadSymbols = clean.slice(0, 52);
+                            const checksumSymbols = clean.slice(52, 56);
+                            let payloadBytes;
+                            try {
+                                payloadBytes = decodeBase32(payloadSymbols);
+                            }
+                            catch (e) {
+                                return { ok: false, reason: e.message };
+                            }
+
+                            // Reject non-canonical Base32 padding.
+                            if (encodeBase32(payloadBytes) !== payloadSymbols) {
+                                return { ok: false, reason: 'Invalid Crockford Base32 encoding — non-zero padding bits.' };
+                            }
+                            const expected = await computeChecksumGroup(payloadBytes);
+                            
+                            if (expected !== checksumSymbols) return { ok: false, reason: 'Checksum group does not match (Crockford format) — a character was likely mistyped somewhere. Recheck each group.' };
+                            
+                            return { ok: true, bytes: payloadBytes, format: 'crockford' };
+                        }
+
+                        return {
+                            ok: false,
+                            reason: `Unrecognized format: expected 68 hex characters or 56 Crockford Base32 characters (got ${compact.length} characters after removing spaces/hyphens).`
+                        };
+                    }
+                    // ---------- WebAuthn ----------
+                    async function normalizeSalt (salt) {
+                        const input = (new TextEncoder()).encode('passkey' + (salt || '').normalize('NFKD'));
+
+                        return crypto.subtle.digest('SHA-256', input);
+                    }
+                    async function createPasskey (userName = 'btc-multisig-key-' + Date.now(), rpId = location.hostname) {
+                        if (!window.PublicKeyCredential) throw new Error('WebAuthn is not supported in this browser');
+                    
+                        const credential = await navigator.credentials.create({
+                            publicKey: {
+                                challenge: crypto.getRandomValues(new Uint8Array(32)),
+                                rp: {
+                                    name: 'Bitcoin Multisig Wallet',
+                                    id: rpId
+                                },
+                                user: {
+                                    id: crypto.getRandomValues(new Uint8Array(32)),
+                                    name: userName,
+                                    displayName: 'Bitcoin Multisig Key'
+                                },
+                                pubKeyCredParams: [
+                                    { type: 'public-key', alg: -7 }, // ES256, preferred on modern platforms
+                                    { type: 'public-key', alg: -257 } // RS256, fallback for older authenticators
+                                ],
+                                authenticatorSelection: { residentKey: 'required', userVerification: 'required' },
+                                extensions: { prf: {} }, // request PRF capability, no eval needed at creation
+                                attestation: 'none',
+                                timeout: 60000
+                            }
+                        });
+
+                        const clientExtensionResults = credential.getClientExtensionResults();
+                        // Some authenticators don't populate `prf.enabled` at creation time
+                        // even though PRF works fine on get(). Only hard-fail when the
+                        // browser explicitly reports PRF as unsupported or absent.
+                        if (clientExtensionResults.prf === undefined) {
+                            throw new Error('This device/browser does not support the Passkey PRF extension');
+                        }
+                        if (clientExtensionResults.prf.enabled === false) {
+                            throw new Error('PRF extension is present but explicitly disabled for this authenticator');
+                        }
+
+                        return {
+                            credentialId: credential.rawId,
+                            rpId
+                        };
+                    }
+                    async function getPasskeySecret (salt = '', credentialId, rpId = location.hostname) {
+                        const saltBuffer = await normalizeSalt(salt);
+                        const allowCredentials = credentialId != null ? [{ type: 'public-key', id: credentialId }] : [];
+
+                        let credential;
+                        try {
+                            credential = await navigator.credentials.get({
+                                publicKey: {
+                                    challenge: crypto.getRandomValues(new Uint8Array(32)),
+                                    rpId,
+                                    allowCredentials,
+                                    userVerification: 'required',
+                                    extensions: {
+                                        prf: { eval: { first: saltBuffer } }
+                                    },
+                                    timeout: 60000
+                                }
+                            });
+                        }
+                        catch (err) {
+                            if (err.name === 'NotAllowedError') throw new Error('User cancelled or verification timed out');
+                            throw err;
+                        }
+
+                        const result = credential.getClientExtensionResults();
+                        const rawSecret = result?.prf?.results?.first;
+                        
+                        if (!rawSecret) throw new Error('PRF unlock failed — authenticator did not return a secret');
+
+                        return { secret: new Uint8Array(rawSecret), credentialId: credential.rawId };
+                    }
+
+                // ---------- UI wiring ----------
+                const envNotice = document.getElementById('envNotice');
+                const btnPasskey = document.getElementById('btnPasskey');
+                const btnCreateNew = document.getElementById('btnCreateNew');
+                const btnVerify = document.getElementById('btnVerify');
+                const passkeyStatus = document.getElementById('passkeyStatus');
+                const noCredentialPrompt = document.getElementById('noCredentialPrompt');
+                const resultCard = document.getElementById('resultCard');
+                const credentialIdOut = document.getElementById('credentialIdOut');
+                const codeGrid = document.getElementById('codeGrid');
+                const hexGrid = document.getElementById('hexGrid');
+                const printBlock = document.getElementById('printBlock');
+                const verifyResult = document.getElementById('verifyResult');
+                const labelInput = document.getElementById('labelInput');
+                // const btnCopyCode = document.getElementById('btnCopyCode');
+                // const btnCopyHex = document.getElementById('btnCopyHex');
+                const copyIcon = `<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 1024 1024"><path fill="currentColor" d="M469.333 85.333a128 128 0 0 0-128 128v128h-128a128 128 0 0 0-128 128v341.334a128 128 0 0 0 128 128h341.334a128 128 0 0 0 128-128v-128h128a128 128 0 0 0 128-128V213.333a128 128 0 0 0-128-128H469.333zm341.334 512H469.333a42.667 42.667 0 0 1-42.666-42.666V213.333a42.667 42.667 0 0 1 42.666-42.666h341.334a42.667 42.667 0 0 1 42.666 42.666v341.334a42.667 42.667 0 0 1-42.666 42.666zM341.333 426.667v128a128 128 0 0 0 128 128h128v128a42.667 42.667 0 0 1-42.666 42.666H213.333a42.667 42.667 0 0 1-42.666-42.666V469.333a42.667 42.667 0 0 1 42.666-42.666h128z"></path></svg>`;
+
+                const isSecure = window.isSecureContext;
+                const hasWebAuthn = !!window.PublicKeyCredential;
+
+                let currentFullCode = null;
+                let currentHexCode = null;
+
+                if (!isSecure || !hasWebAuthn) {
+                    envNotice.classList.add('warn');
+                    envNotice.innerHTML = '<strong>Passkeys can\'t be used in this environment.</strong> Step 1 requires HTTPS (for example, accessing this page via GitHub Pages) — opening it directly via <code>file://</code> can\'t invoke Passkey APIs. Step 2\'s verification tool is unaffected and works in any environment.';
+                    btnPasskey.disabled = btnCreateNew.disabled = labelInput.disabled = true;
+                }
+                else {
+                    envNotice.innerHTML = 'This environment supports Passkeys. Step 1 will prompt for Face ID / Touch ID or a security key.';
+                }
+
+                async function copyToClipboard (text, buttonEl) {
+                    try {
+                        await navigator.clipboard.writeText(text);
+                    }
+                    catch {
+                        // Fallback for contexts without Clipboard API permission
+                        const ta = document.createElement('textarea');
+                        ta.value = text;
+                        ta.style.position = 'fixed';
+                        ta.style.opacity = '0';
+                        document.body.appendChild(ta);
+                        ta.select();
+                        document.execCommand('copy');
+                        document.body.removeChild(ta);
+                    }
+                    buttonEl.innerHTML = 'Copied';
+                    buttonEl.classList.add('copied');
+                    setTimeout(() => {
+                        buttonEl.innerHTML = copyIcon;
+                        buttonEl.classList.remove('copied');
+                    }, 1500);
+                }
+
+                function setStatus (el, type, text) {
+                    el.className = 'status show ' + type;
+                    el.textContent = text;
+                }
+                async function buildHexCode (secretBytes) {
+                    const hash = new Uint8Array(await crypto.subtle.digest('SHA-256', secretBytes));
+                    return bufToHex(secretBytes) + bufToHex(hash.slice(0, 2));
+                }
+
+                function renderCodeGrid (gridEl, symbols, groupSize, id, onClick) {
+                    const groups = groupSymbols(symbols, groupSize);
+                    gridEl.innerHTML = '';
+                    groups.forEach((g, i) => {
+                        const span = document.createElement('span');
+                        span.className = 'code-group' + (i === groups.length - 1 ? ' checksum' : '');
+                        span.textContent = g;
+                        gridEl.appendChild(span);
+                    });
+
+                    const copy = document.createElement('span');
+                    copy.id = id;
+                    copy.innerHTML = copyIcon;
+                    gridEl.appendChild(copy);
+                    copy.onclick = onClick;
+                }
+                function renderSignerCard(credentialId, fullCode, hexCode) {
+                    credentialIdOut.textContent = bufToBase64Url(credentialId);
+                    currentFullCode = fullCode;
+                    currentHexCode = hexCode;
+
+                    renderCodeGrid(codeGrid, fullCode, 4, 'btnCopyCode', () => {
+                        if (currentFullCode) copyToClipboard(currentFullCode, btnCopyCode);
+                    });
+                    renderCodeGrid(hexGrid, hexCode, 4, 'btnCopyHex', () => {
+                        if (currentHexCode) copyToClipboard(currentHexCode, btnCopyHex);
+                    });
+
+                    resultCard.style.display = 'block';
+                    //printBlock.style.display = 'block';
+                }
+
+                async function usePasskeySecret (credentialId, rpId, msg) {
+                    const result = await getPasskeySecret(''/*salt*/, credentialId, rpId);
+                    const passkeySecret = result.secret;
+                    const fullCode = await buildCode(passkeySecret);
+                    const hexCode = await buildHexCode(passkeySecret);
+                    passkeySecret.fill(0);
+                    //renderSignerCard(result.credentialId, fullCode);
+                    renderSignerCard(result.credentialId, fullCode, hexCode);
+                    setStatus(passkeyStatus, 'ok', msg);
+                }
+                // Nothing is persisted: each click either matches an existing resident
+                // Passkey via the platform's own picker (allowCredentials left empty),
+                // or — only if that comes back empty/cancelled — offers an explicit
+                // "create new" action. We never guess and never auto-create.
+                btnPasskey.addEventListener('click', async () => {
+                    btnPasskey.disabled = true;
+                    setStatus(passkeyStatus, 'info', 'Waiting for Face ID / Touch ID verification…');
+
+                    try {
+                        await usePasskeySecret(null, location.hostname, 'Generated. Verify it with Step 2 before transcribing to the offline device.');
+                    }
+                    catch (err) {
+                        setStatus(passkeyStatus, 'err', err.message);
+                        // Ambiguous by design (WebAuthn privacy protection): this fires both
+                        // when the user cancels and when no matching Passkey exists on this
+                        // device. Offer "create new" explicitly rather than guessing.
+                    }
+                    finally {
+                        btnPasskey.disabled = false;
+                    }
+                });
+                btnCreateNew.addEventListener('click', async () => {
+                    btnCreateNew.disabled = true;
+                    setStatus(passkeyStatus, 'info', 'Waiting for Face ID / Touch ID verification…');
+
+                    try {
+                        const userName = labelInput.value.length ? labelInput.value : 'torbit-btc-multisig-' + Date.now();
+                        const { credentialId, rpId } = await createPasskey(userName, location.hostname);
+                        await usePasskeySecret(credentialId, rpId, 'Created and generated. Verify it with Step 2 before transcribing to the offline device.');
+                    }
+                    catch (err) {
+                        setStatus(passkeyStatus, 'err', err.message);
+                    }
+                    finally {
+                        btnCreateNew.disabled = false;
+                    }
+                });
+                btnVerify.addEventListener('click', async () => {
+                    const input = document.getElementById('verifyInput').value;
+                    const result = await verifyCode(input);
+                    verifyResult.className = 'verify-result show ' + (result.ok ? 'pass' : 'fail');
+                    verifyResult.textContent = result.ok ? 'Verified — safe to transcribe to the offline device.' : 'Verification failed: ' + result.reason;
+                });
+
+                //document.getElementById('btnPrint').addEventListener('click', () => window.print());
+            })();
+        </script>
+    </body>
+</html>

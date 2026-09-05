@@ -222,11 +222,12 @@
                     }
                     async function verifyCode (rawInput) {
                         const compact = rawInput.trim().replace(/[\s\-]/g, '');
+                        const isHex = /^[0-9a-fA-F]+$/.test(compact);
 
                         // Hex path: only hex digits AND the expected checksummed length.
                         // Length (68 vs 56) disambiguates from Crockford even though their
                         // alphabets overlap (Crockford's letters include A-F).
-                        if (/^[0-9a-fA-F]+$/.test(compact) && compact.length === 68) {
+                        if (compact.length === 68 && isHex) {
                             const payloadHex = compact.slice(0, 64).toLowerCase();
                             const checksumHex = compact.slice(64, 68).toLowerCase();
                             const payloadBytes = hexToBuf(payloadHex);
@@ -236,6 +237,22 @@
                             if (expected !== checksumHex) return { ok: false, reason: 'Checksum does not match (hex format) — a character was likely mistyped. Recheck each group.' };
                             
                             return { ok: true, bytes: payloadBytes, format: 'hex' };
+                        }
+
+                        // 64-char raw hex: this has no checksum of its own (e.g. a buffer copied
+                        // directly from another tool, not from this page's 68-char output), so
+                        // it can't be verified automatically. Compute what the checksum would
+                        // be and surface it so the user can visually confirm and append it.
+                        if (compact.length === 64 && isHex) {
+                            const payloadBytes = hexToBuf(compact.toLowerCase());
+                            const hash = new Uint8Array(await crypto.subtle.digest('SHA-256', payloadBytes));
+                            const checksumHex = bufToHex(hash.slice(0, 2));
+                            return {
+                                ok: false,
+                                reason: `This is a raw 64-character hex value with no checksum, so it can't be verified automatically. ` +
+                                `If you're confident it was copied correctly, its checksum is "<b>${checksumHex}</b>" — ` +
+                                `the checksummed 68-character form is: ${compact.toLowerCase()}<b>${checksumHex}</b>`
+                            };
                         }
 
                         // Crockford path.
@@ -495,7 +512,7 @@
                     const input = document.getElementById('verifyInput').value;
                     const result = await verifyCode(input);
                     verifyResult.className = 'verify-result show ' + (result.ok ? 'pass' : 'fail');
-                    verifyResult.textContent = result.ok ? 'Verified — safe to transcribe to the offline device.' : 'Verification failed: ' + result.reason;
+                    verifyResult.innerHTML = result.ok ? 'Verified — safe to transcribe to the offline device.' : 'Verification failed: ' + result.reason;
                 });
 
                 //document.getElementById('btnPrint').addEventListener('click', () => window.print());
